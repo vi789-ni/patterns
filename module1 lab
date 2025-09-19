@@ -1,0 +1,117 @@
+import java.util.ArrayList;
+import java.util.Scanner;
+
+abstract class Employee {
+    String name;
+    String position;
+
+    Employee(String name, String position) {
+        this.name = name;
+        this.position = position;
+    }
+    
+    abstract double calculateSalary();
+
+    @Override
+    public String toString() {
+        return name + " (" + position + ")";
+    }
+}
+
+class Worker extends Employee {
+    double hourlyRate;
+    int hours;
+
+    Worker(String name, double hourlyRate, int hours) {
+        super(name, "Рабочий");
+        this.hourlyRate = hourlyRate;
+        this.hours = hours;
+    }
+
+    @Override
+    double calculateSalary() {
+        return hourlyRate * hours;
+    }
+}
+
+class Manager extends Employee {
+    double fixedSalary;
+    double bonus;
+
+    Manager(String name, double fixedSalary, double bonus) {
+        super(name, "Менеджер");
+        this.fixedSalary = fixedSalary;
+        this.bonus = bonus;
+    }
+
+    @Override
+    double calculateSalary() {
+        return fixedSalary + bonus;
+    }
+}
+
+class EmployeeSystem {
+    ArrayList<Employee> employees = new ArrayList<>();
+
+    void addEmployee(Employee e) {
+        employees.add(e);
+        System.out.println("Сотрудник добавлен: " + e);
+    }
+
+    void showEmployees() {
+        if (employees.isEmpty()) {
+            System.out.println("Сотрудников нет.");
+        } else {
+            for (Employee e : employees) {
+                System.out.println(e + " | Зарплата: " + e.calculateSalary());
+            }
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        EmployeeSystem system = new EmployeeSystem();
+        Scanner sc = new Scanner(System.in);
+
+        while (true) {
+            System.out.println("\n1. Добавить рабочего");
+            System.out.println("2. Добавить менеджера");
+            System.out.println("3. Показать сотрудников");
+            System.out.println("0. Выход");
+            System.out.print("Выбор: ");
+
+            int choice = sc.nextInt();
+            sc.nextLine();
+
+            switch (choice) {
+                case 1 -> {
+                    System.out.print("Имя: ");
+                    String name = sc.nextLine();
+                    System.out.print("Ставка за час: ");
+                    double rate = sc.nextDouble();
+                    System.out.print("Часы: ");
+                    int hours = sc.nextInt();
+                    sc.nextLine();
+                    system.addEmployee(new Worker(name, rate, hours));
+                }
+                case 2 -> {
+                    System.out.print("Имя: ");
+                    String name = sc.nextLine();
+                    System.out.print("Фиксированная зарплата: ");
+                    double fixed = sc.nextDouble();
+                    System.out.print("Премия: ");
+                    double bonus = sc.nextDouble();
+                    sc.nextLine();
+                    system.addEmployee(new Manager(name, fixed, bonus));
+                }
+                case 3 -> system.showEmployees();
+                case 0 -> {
+                    System.out.println("Выход...");
+                    return;
+                }
+                default -> System.out.println("Неверный выбор!");
+            }
+        }
+    }
+}
