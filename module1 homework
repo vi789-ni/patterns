@@ -1,0 +1,182 @@
+import java.util.ArrayList;
+import java.util.Scanner;
+
+class Book {
+    String title;
+    String author;
+    int copies;
+
+    Book(String title, String author, int copies) {
+        this.title = title;
+        this.author = author;
+        this.copies = copies;
+    }
+
+    @Override
+    public String toString() {
+        return title + " (" + author + "), экземпляров: " + copies;
+    }
+}
+
+class Reader {
+    String name;
+    ArrayList<String> borrowedBooks = new ArrayList<>();
+
+    Reader(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return name + " (взято книг: " + borrowedBooks.size() + ")";
+    }
+}
+
+class Library {
+    ArrayList<Book> books = new ArrayList<>();
+    ArrayList<Reader> readers = new ArrayList<>();
+
+    // --- Книги ---
+    void addBook(String title, String author, int copies) {
+        books.add(new Book(title, author, copies));
+        System.out.println("Книга добавлена!");
+    }
+
+    void removeBook(String title) {
+        books.removeIf(b -> b.title.equalsIgnoreCase(title));
+        System.out.println("Книга удалена!");
+    }
+
+    // --- Читатели ---
+    void registerReader(String name) {
+        readers.add(new Reader(name));
+        System.out.println("Читатель зарегистрирован!");
+    }
+
+    void removeReader(String name) {
+        readers.removeIf(r -> r.name.equalsIgnoreCase(name));
+        System.out.println("Читатель удалён!");
+    }
+
+    // --- Выдача и возврат ---
+    void giveBook(String title, String readerName) {
+        for (Book b : books) {
+            if (b.title.equalsIgnoreCase(title) && b.copies > 0) {
+                for (Reader r : readers) {
+                    if (r.name.equalsIgnoreCase(readerName)) {
+                        b.copies--;
+                        r.borrowedBooks.add(title);
+                        System.out.println("Книга \"" + title + "\" выдана читателю " + r.name);
+                        return;
+                    }
+                }
+                System.out.println("Читатель не найден!");
+                return;
+            }
+        }
+        System.out.println("Книга недоступна!");
+    }
+
+    void returnBook(String title, String readerName) {
+        for (Reader r : readers) {
+            if (r.name.equalsIgnoreCase(readerName)) {
+                if (r.borrowedBooks.remove(title)) {
+                    for (Book b : books) {
+                        if (b.title.equalsIgnoreCase(title)) {
+                            b.copies++;
+                            System.out.println("Книга \"" + title + "\" возвращена от " + r.name);
+                            return;
+                        }
+                    }
+                } else {
+                    System.out.println("У читателя нет такой книги!");
+                }
+                return;
+            }
+        }
+        System.out.println("Читатель не найден!");
+    }
+
+    // --- Показ ---
+    void showBooks() {
+        if (books.isEmpty()) System.out.println("Книг нет.");
+        else for (Book b : books) System.out.println(b);
+    }
+
+    void showReaders() {
+        if (readers.isEmpty()) System.out.println("Читателей нет.");
+        else for (Reader r : readers) System.out.println(r);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Library library = new Library();
+        Scanner sc = new Scanner(System.in);
+
+        while (true) {
+            System.out.println("\n1. Добавить книгу");
+            System.out.println("2. Удалить книгу");
+            System.out.println("3. Зарегистрировать читателя");
+            System.out.println("4. Удалить читателя");
+            System.out.println("5. Выдать книгу");
+            System.out.println("6. Вернуть книгу");
+            System.out.println("7. Показать книги");
+            System.out.println("8. Показать читателей");
+            System.out.println("0. Выход");
+            System.out.print("Выбор: ");
+
+            int choice = sc.nextInt();
+            sc.nextLine(); // очистка ввода
+
+            switch (choice) {
+                case 1 -> {
+                    System.out.print("Название: ");
+                    String title = sc.nextLine();
+                    System.out.print("Автор: ");
+                    String author = sc.nextLine();
+                    System.out.print("Кол-во: ");
+                    int copies = sc.nextInt();
+                    sc.nextLine();
+                    library.addBook(title, author, copies);
+                }
+                case 2 -> {
+                    System.out.print("Название книги: ");
+                    String title = sc.nextLine();
+                    library.removeBook(title);
+                }
+                case 3 -> {
+                    System.out.print("Имя читателя: ");
+                    String name = sc.nextLine();
+                    library.registerReader(name);
+                }
+                case 4 -> {
+                    System.out.print("Имя читателя: ");
+                    String name = sc.nextLine();
+                    library.removeReader(name);
+                }
+                case 5 -> {
+                    System.out.print("Название книги: ");
+                    String title = sc.nextLine();
+                    System.out.print("Имя читателя: ");
+                    String reader = sc.nextLine();
+                    library.giveBook(title, reader);
+                }
+                case 6 -> {
+                    System.out.print("Название книги: ");
+                    String title = sc.nextLine();
+                    System.out.print("Имя читателя: ");
+                    String reader = sc.nextLine();
+                    library.returnBook(title, reader);
+                }
+                case 7 -> library.showBooks();
+                case 8 -> library.showReaders();
+                case 0 -> {
+                    System.out.println("Выход...");
+                    return;
+                }
+                default -> System.out.println("Неверный выбор!");
+            }
+        }
+    }
+}
