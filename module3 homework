@@ -1,0 +1,242 @@
+#1
+using System;
+
+namespace SRP
+{
+
+    public class Order
+    {
+        public string ProductName { get; set; }
+        public int Quantity { get; set; }
+        public double Price { get; set; }
+    }
+
+    public class PriceCalculator
+    {
+        public double CalculateTotalPrice(Order order)
+        {
+            return order.Quantity * order.Price * 0.9; 
+        }
+    }
+
+    public class PaymentProcessor
+    {
+        public void ProcessPayment(string paymentDetails, double amount)
+        {
+            Console.WriteLine($"Оплата {amount}$ прошла через: {paymentDetails}");
+        }
+    }
+
+    public class NotificationService
+    {
+        public void SendConfirmation(string email)
+        {
+            Console.WriteLine($"Подтверждение отправлено на: {email}");
+        }
+    }
+
+    class Program
+    {
+        static void Main()
+        {
+            var order = new Order();
+
+            Console.Write("Введите название товара: ");
+            order.ProductName = Console.ReadLine();
+
+            Console.Write("Введите количество: ");
+            order.Quantity = int.Parse(Console.ReadLine());
+
+            Console.Write("Введите цену за единицу: ");
+            order.Price = double.Parse(Console.ReadLine());
+
+            var calculator = new PriceCalculator();
+            double total = calculator.CalculateTotalPrice(order);
+
+            Console.WriteLine($"Итого к оплате: {total}$");
+
+            Console.Write("Введите способ оплаты (например, 'Карта'): ");
+            string payment = Console.ReadLine();
+
+            var paymentProcessor = new PaymentProcessor();
+            paymentProcessor.ProcessPayment(payment, total);
+
+            Console.Write("Введите email для подтверждения: ");
+            string email = Console.ReadLine();
+
+            var notifier = new NotificationService();
+            notifier.SendConfirmation(email);
+        }
+    }
+}
+
+#2
+using System;
+
+namespace OCP
+{
+    public class Employee
+    {
+        public string Name { get; set; }
+        public double BaseSalary { get; set; }
+    }
+
+    public interface ISalaryCalculator
+    {
+        double CalculateSalary(Employee employee);
+    }
+
+    public class PermanentSalaryCalculator : ISalaryCalculator
+    {
+        public double CalculateSalary(Employee employee) => employee.BaseSalary * 1.2;
+    }
+
+    public class ContractSalaryCalculator : ISalaryCalculator
+    {
+        public double CalculateSalary(Employee employee) => employee.BaseSalary * 1.1;
+    }
+
+    public class InternSalaryCalculator : ISalaryCalculator
+    {
+        public double CalculateSalary(Employee employee) => employee.BaseSalary * 0.8;
+    }
+
+    class Program
+    {
+        static void Main()
+        {
+            var employee = new Employee();
+
+            Console.Write("Введите имя сотрудника: ");
+            employee.Name = Console.ReadLine();
+
+            Console.Write("Введите базовую зарплату: ");
+            employee.BaseSalary = double.Parse(Console.ReadLine());
+
+            Console.WriteLine("Выберите тип: 1 - Permanent, 2 - Contract, 3 - Intern");
+            string type = Console.ReadLine();
+
+            ISalaryCalculator calculator = type switch
+            {
+                "1" => new PermanentSalaryCalculator(),
+                "2" => new ContractSalaryCalculator(),
+                "3" => new InternSalaryCalculator(),
+                _ => throw new Exception("Неизвестный тип сотрудника")
+            };
+
+            double salary = calculator.CalculateSalary(employee);
+            Console.WriteLine($"{employee.Name} получит: {salary}$");
+        }
+    }
+}
+
+#3
+using System;
+
+namespace ISP
+{
+    public interface IPrinter
+    {
+        void Print(string content);
+    }
+
+    public interface IScanner
+    {
+        void Scan(string content);
+    }
+
+    public interface IFax
+    {
+        void Fax(string content);
+    }
+
+    public class AllInOnePrinter : IPrinter, IScanner, IFax
+    {
+        public void Print(string content) => Console.WriteLine("Печать: " + content);
+        public void Scan(string content) => Console.WriteLine("Сканирование: " + content);
+        public void Fax(string content) => Console.WriteLine("Факс: " + content);
+    }
+
+    public class BasicPrinter : IPrinter
+    {
+        public void Print(string content) => Console.WriteLine("Печать: " + content);
+    }
+
+    class Program
+    {
+        static void Main()
+        {
+            Console.Write("Выберите принтер (1 - AllInOne, 2 - Basic): ");
+            string choice = Console.ReadLine();
+
+            if (choice == "1")
+            {
+                var printer = new AllInOnePrinter();
+                printer.Print("Документ");
+                printer.Scan("Документ");
+                printer.Fax("Документ");
+            }
+            else
+            {
+                var printer = new BasicPrinter();
+                printer.Print("Документ");
+            }
+        }
+    }
+}
+
+#4
+using System;
+
+namespace DIP
+{
+    public interface INotificationSender
+    {
+        void Send(string message);
+    }
+
+    public class EmailSender : INotificationSender
+    {
+        public void Send(string message) => Console.WriteLine("Email отправлен: " + message);
+    }
+
+    public class SmsSender : INotificationSender
+    {
+        public void Send(string message) => Console.WriteLine("SMS отправлено: " + message);
+    }
+
+    public class NotificationService
+    {
+        private readonly INotificationSender _sender;
+
+        public NotificationService(INotificationSender sender)
+        {
+            _sender = sender;
+        }
+
+        public void SendNotification(string message)
+        {
+            _sender.Send(message);
+        }
+    }
+
+    class Program
+    {
+        static void Main()
+        {
+            Console.Write("Выберите способ уведомления (1 - Email, 2 - SMS): ");
+            string choice = Console.ReadLine();
+
+            INotificationSender sender = choice == "2" ? new SmsSender() : new EmailSender();
+
+            var service = new NotificationService(sender);
+
+            Console.Write("Введите сообщение: ");
+            string msg = Console.ReadLine();
+
+            service.SendNotification(msg);
+        }
+    }
+}
+
+
