@@ -1,0 +1,211 @@
+using System;
+using System.Collections.Generic;
+
+namespace Shopping
+{ public class Product
+    {
+        public string Name { get; }
+        public double Price { get; }
+
+        public Product(string name, double price)
+        {
+            Name = name;
+            Price = price;
+        }
+    }
+    public interface IPayment
+    {
+        void ProcessPayment(double amount);
+    }
+
+    public class CreditCardPayment : IPayment
+    {
+        public void ProcessPayment(double amount)
+        {
+            Console.WriteLine($"Оплата {amount}$ кредитной картой.");
+        }
+    }
+
+    public class PayPalPayment : IPayment
+    {
+        public void ProcessPayment(double amount)
+        {
+            Console.WriteLine($"Оплата {amount}$ через PayPal.");
+        }
+    }
+
+    public class BankTransferPayment : IPayment
+    {
+        public void ProcessPayment(double amount)
+        {
+            Console.WriteLine($"Оплата {amount}$ банковским переводом.");
+        }
+    }
+
+    public interface IDelivery
+    {
+        void DeliverOrder(Order order);
+    }
+
+    public class CourierDelivery : IDelivery
+    {
+        public void DeliverOrder(Order order)
+        {
+            Console.WriteLine("Доставка курьером оформлена.");
+        }
+    }
+
+    public class PostDelivery : IDelivery
+    {
+        public void DeliverOrder(Order order)
+        {
+            Console.WriteLine("Доставка почтой оформлена.");
+        }
+    }
+
+    public class PickUpPointDelivery : IDelivery
+    {
+        public void DeliverOrder(Order order)
+        {
+            Console.WriteLine("Доставка в пункт самовывоза оформлена.");
+        }
+    }
+
+    public interface INotification
+    {
+        void SendNotification(string message);
+    }
+
+    public class EmailNotification : INotification
+    {
+        public void SendNotification(string message)
+        {
+            Console.WriteLine($"Отправлено email-уведомление: {message}");
+        }
+    }
+
+    public class SmsNotification : INotification
+    {
+        public void SendNotification(string message)
+        {
+            Console.WriteLine($"Отправлено SMS-уведомление: {message}");
+        }
+    }
+
+    public interface IDiscount
+    {
+        double ApplyDiscount(double total);
+    }
+
+    public class NoDiscount : IDiscount
+    {
+        public double ApplyDiscount(double total) => total;
+    }
+
+    public class TenPercentDiscount : IDiscount
+    {
+        public double ApplyDiscount(double total) => total * 0.9;
+    }
+
+    public class FiveHundredOffDiscount : IDiscount
+    {
+        public double ApplyDiscount(double total) => total - 500;
+    }
+
+    public class DiscountCalculator
+    {
+        public double CalculateTotal(double total, IDiscount discount)
+        {
+            return discount.ApplyDiscount(total);
+        }
+    }
+
+    public class Order
+    {
+        public List<Product> Products { get; } = new List<Product>();
+        public IPayment Payment { get; set; }
+        public IDelivery Delivery { get; set; }
+        public INotification Notification { get; set; }
+
+        public void AddProduct(Product product)
+        {
+            Products.Add(product);
+        }
+
+        public double GetTotal()
+        {
+            double total = 0;
+            foreach (var p in Products)
+                total += p.Price;
+            return total;
+        }
+    }
+
+    class Program
+    {
+        static void Main()
+        {
+            var order = new Order();
+
+            Console.WriteLine("=== Онлайн-магазин ===");
+            Console.Write("Сколько товаров добавить в заказ? ");
+            int count = int.Parse(Console.ReadLine());
+
+            for (int i = 0; i < count; i++)
+            {
+                Console.Write($"Введите название товара {i + 1}: ");
+                string name = Console.ReadLine();
+                Console.Write($"Введите цену товара {i + 1}: ");
+                double price = double.Parse(Console.ReadLine());
+
+                order.AddProduct(new Product(name, price));
+            }
+
+            Console.WriteLine("Выберите скидку: 1 - без скидки, 2 - 10%, 3 - минус 500$");
+            string discountChoice = Console.ReadLine();
+            IDiscount discount = discountChoice switch
+            {
+                "2" => new TenPercentDiscount(),
+                "3" => new FiveHundredOffDiscount(),
+                _ => new NoDiscount()
+            };
+
+            double total = order.GetTotal();
+            var discountCalculator = new DiscountCalculator();
+            double finalTotal = discountCalculator.CalculateTotal(total, discount);
+            Console.WriteLine($"Итого к оплате: {finalTotal}$");
+
+            Console.WriteLine("Выберите способ оплаты: 1 - карта, 2 - PayPal, 3 - перевод");
+            string payChoice = Console.ReadLine();
+            order.Payment = payChoice switch
+            {
+                "2" => new PayPalPayment(),
+                "3" => new BankTransferPayment(),
+                _ => new CreditCardPayment()
+            };
+
+            order.Payment.ProcessPayment(finalTotal);
+
+            Console.WriteLine("Выберите доставку: 1 - курьер, 2 - почта, 3 - самовывоз");
+            string deliveryChoice = Console.ReadLine();
+            order.Delivery = deliveryChoice switch
+            {
+                "2" => new PostDelivery(),
+                "3" => new PickUpPointDelivery(),
+                _ => new CourierDelivery()
+            };
+
+            order.Delivery.DeliverOrder(order);
+
+            Console.WriteLine("Выберите уведомление: 1 - Email, 2 - SMS");
+            string notifChoice = Console.ReadLine();
+            order.Notification = notifChoice switch
+            {
+                "2" => new SmsNotification(),
+                _ => new EmailNotification()
+            };
+
+            order.Notification.SendNotification("Ваш заказ оформлен и находится в обработке!");
+        }
+    }
+}
