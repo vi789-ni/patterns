@@ -1,0 +1,272 @@
+#1
+
+using System;
+using System.Collections.Generic;
+
+namespace SRP
+{
+    public class Item
+    {
+        public string Name { get; set; }
+        public double Price { get; set; }
+    }
+
+    public class Invoice
+    {
+        public int Id { get; set; }
+        public List<Item> Items { get; set; }
+        public double TaxRate { get; set; }
+    }
+
+    public class InvoiceCalculator
+    {
+        public double CalculateTotal(Invoice invoice)
+        {
+            double subTotal = 0;
+            foreach (var item in invoice.Items)
+                subTotal += item.Price;
+
+            return subTotal + (subTotal * invoice.TaxRate);
+        }
+    }
+
+    public class InvoiceRepository
+    {
+        public void SaveToDatabase(Invoice invoice)
+        {
+            Console.WriteLine($"Счет №{invoice.Id} сохранен в базе данных.");
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.Write("Введите ID счета: ");
+            int id = int.Parse(Console.ReadLine());
+
+            Console.Write("Введите налоговую ставку (например 0,2): ");
+            double tax = double.Parse(Console.ReadLine());
+
+            var items = new List<Item>();
+            Console.Write("Сколько товаров добавить? ");
+            int count = int.Parse(Console.ReadLine());
+
+            for (int i = 0; i < count; i++)
+            {
+                Console.Write($"Введите название товара {i + 1}: ");
+                string name = Console.ReadLine();
+                Console.Write($"Введите цену товара {i + 1}: ");
+                double price = double.Parse(Console.ReadLine());
+
+                items.Add(new Item { Name = name, Price = price });
+            }
+
+            var invoice = new Invoice { Id = id, TaxRate = tax, Items = items };
+            var calculator = new InvoiceCalculator();
+            var repo = new InvoiceRepository();
+
+            double total = calculator.CalculateTotal(invoice);
+            Console.WriteLine($"Итоговая сумма: {total}");
+            repo.SaveToDatabase(invoice);
+        }
+    }
+
+#2
+
+using System;
+
+namespace OCP
+{
+    public interface IDiscount
+    {
+        double ApplyDiscount(double amount);
+    }
+
+    public class RegularDiscount : IDiscount
+    {
+        public double ApplyDiscount(double amount) => amount;
+    }
+
+    public class SilverDiscount : IDiscount
+    {
+        public double ApplyDiscount(double amount) => amount * 0.9;
+    }
+
+    public class GoldDiscount : IDiscount
+    {
+        public double ApplyDiscount(double amount) => amount * 0.8;
+    }
+
+    public class PlatinumDiscount : IDiscount
+    {
+        public double ApplyDiscount(double amount) => amount * 0.7;
+    }
+
+    public class DiscountCalculator
+    {
+        public double Calculate(IDiscount discount, double amount)
+        {
+            return discount.ApplyDiscount(amount);
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.Write("Введите сумму покупки: ");
+            double amount = double.Parse(Console.ReadLine());
+
+            Console.WriteLine("Выберите тип клиента: Regular, Silver, Gold, Platinum");
+            string type = Console.ReadLine();
+
+            IDiscount discount;
+            switch (type.ToLower())
+            {
+                case "regular": discount = new RegularDiscount(); break;
+                case "silver": discount = new SilverDiscount(); break;
+                case "gold": discount = new GoldDiscount(); break;
+                case "platinum": discount = new PlatinumDiscount(); break;
+                default:
+                    Console.WriteLine("Неизвестный тип клиента");
+                    return;
+            }
+
+            var calculator = new DiscountCalculator();
+            Console.WriteLine($"Сумма со скидкой: {calculator.Calculate(discount, amount)}");
+        }
+    }
+}
+
+#3
+
+using System;
+
+namespace ISP
+{
+    public interface IWorkable
+    {
+        void Work();
+    }
+
+    public interface IEatable
+    {
+        void Eat();
+    }
+
+    public interface ISleepable
+    {
+        void Sleep();
+    }
+
+    public class HumanWorker : IWorkable, IEatable, ISleepable
+    {
+        public void Work() => Console.WriteLine("Человек работает");
+        public void Eat() => Console.WriteLine("Человек ест");
+        public void Sleep() => Console.WriteLine("Человек спит");
+    }
+
+    public class RobotWorker : IWorkable
+    {
+        public void Work() => Console.WriteLine("Робот работает");
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.Write("Введите тип работника (human/robot): ");
+            string type = Console.ReadLine().ToLower();
+
+            if (type == "human")
+            {
+                var human = new HumanWorker();
+                human.Work();
+                human.Eat();
+                human.Sleep();
+            }
+            else if (type == "robot")
+            {
+                var robot = new RobotWorker();
+                robot.Work();
+            }
+            else
+            {
+                Console.WriteLine("Неизвестный тип работника");
+            }
+        }
+    }
+}
+
+#4
+
+using System;
+
+namespace DIP
+{
+    public interface IMessageService
+    {
+        void SendMessage(string message);
+    }
+
+    public class EmailService : IMessageService
+    {
+        public void SendMessage(string message)
+        {
+            Console.WriteLine($"Отправка Email: {message}");
+        }
+    }
+
+    public class SmsService : IMessageService
+    {
+        public void SendMessage(string message)
+        {
+            Console.WriteLine($"Отправка SMS: {message}");
+        }
+    }
+
+    public class Notification
+    {
+        private readonly IMessageService _messageService;
+
+        public Notification(IMessageService messageService)
+        {
+            _messageService = messageService;
+        }
+
+        public void Send(string message)
+        {
+            _messageService.SendMessage(message);
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.Write("Введите способ уведомления (email/sms): ");
+            string type = Console.ReadLine().ToLower();
+
+            IMessageService service;
+            if (type == "email")
+                service = new EmailService();
+            else if (type == "sms")
+                service = new SmsService();
+            else
+            {
+                Console.WriteLine("Неизвестный способ уведомления");
+                return;
+            }
+
+            Console.Write("Введите сообщение: ");
+            string message = Console.ReadLine();
+
+            var notification = new Notification(service);
+            notification.Send(message);
+        }
+    }
+}
+
+
+}
