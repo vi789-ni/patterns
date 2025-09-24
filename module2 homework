@@ -1,0 +1,159 @@
+#DRY
+using System;
+
+public class Logger
+{
+    public void Log(string level, string message)
+    {
+        Console.WriteLine($"{level.ToUpper()}: {message}");
+    }
+}
+
+public class Config
+{
+    public static string ConnectionString = "Server=myServer;Database=myDb;User Id=myUser;Password=myPass;";
+}
+
+public class DatabaseService
+{
+    public void Connect()
+    {
+        Console.WriteLine("Connecting to DB with: " + Config.ConnectionString);
+    }
+}
+
+public class LoggingService
+{
+    public void Log(string message)
+    {
+        Console.WriteLine("Saving log to DB with: " + Config.ConnectionString);
+        Console.WriteLine("Log: " + message);
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        Logger logger = new Logger();
+        Console.Write("Введите сообщение для ошибки: ");
+        string error = Console.ReadLine();
+        logger.Log("error", error);
+
+        Console.Write("Введите сообщение для предупреждения: ");
+        string warn = Console.ReadLine();
+        logger.Log("warning", warn);
+
+        DatabaseService db = new DatabaseService();
+        db.Connect();
+
+        LoggingService logService = new LoggingService();
+        Console.Write("Введите лог для записи в БД: ");
+        string logMsg = Console.ReadLine();
+        logService.Log(logMsg);
+    }
+}
+#KISS
+using System;
+
+class KISS
+{
+    public void ProcessNumbers(int[] numbers)
+    {
+        foreach (var n in numbers)
+        {
+            if (n > 0)
+                Console.WriteLine(n);
+        }
+    }
+
+    public void PrintPositiveNumbers(int[] numbers)
+    {
+        foreach (var n in numbers)
+        {
+            if (n > 0)
+                Console.WriteLine(n);
+        }
+    }
+
+    public int Divide(int a, int b)
+    {
+        if (b == 0) return 0;
+        return a / b;
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        KISS ex = new KISS();
+
+        Console.Write("Введите числа через пробел: ");
+        int[] nums = Array.ConvertAll(Console.ReadLine().Split(), int.Parse);
+
+        Console.WriteLine("\nПоложительные числа:");
+        ex.ProcessNumbers(nums);
+
+        Console.WriteLine("\nДеление:");
+        Console.Write("Введите a: ");
+        int a = int.Parse(Console.ReadLine());
+        Console.Write("Введите b: ");
+        int b = int.Parse(Console.ReadLine());
+        Console.WriteLine($"Результат: {ex.Divide(a, b)}");
+    }
+}
+#YAGNI
+using System;
+
+public class User
+{
+    public string Name { get; set; }
+    public string Email { get; set; }
+
+    public void SaveToDatabase()
+    {
+        Console.WriteLine($"Пользователь {Name} сохранен в базу.");
+    }
+}
+
+public class FileReader
+{
+    public string ReadFile(string filePath)
+    {
+        return $"Содержимое файла {filePath}";
+    }
+}
+
+public class ReportGenerator
+{
+    public void GenerateReport(string format)
+    {
+        Console.WriteLine($"Отчет в формате {format} сгенерирован.");
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        Console.Write("Введите имя пользователя: ");
+        string name = Console.ReadLine();
+        Console.Write("Введите email пользователя: ");
+        string email = Console.ReadLine();
+
+        User user = new User { Name = name, Email = email };
+        user.SaveToDatabase();
+
+        Console.Write("\nВведите путь к файлу: ");
+        string path = Console.ReadLine();
+        FileReader reader = new FileReader();
+        Console.WriteLine(reader.ReadFile(path));
+
+        Console.Write("\nВведите формат отчета (PDF/Excel/HTML): ");
+        string format = Console.ReadLine();
+        ReportGenerator generator = new ReportGenerator();
+        generator.GenerateReport(format);
+    }
+}
+
